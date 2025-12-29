@@ -1,0 +1,44 @@
+import {
+  ShoppingBag,
+  Coffee,
+  Car,
+  Home as HomeIcon,
+  Zap,
+  Smartphone,
+  Wifi,
+  Gift,
+  Heart,
+  Briefcase,
+  Plane,
+  Music,
+  Book,
+  Smile,
+  Wallet,
+  TrendingUp,
+  Coins,
+  Landmark,
+  PiggyBank
+} from 'lucide-react';
+
+export const ICON_MAP = {
+  'shopping': <ShoppingBag size={20} />,
+  'food': <Coffee size={20} />,
+  'transport': <Car size={20} />,
+  'housing': <HomeIcon size={20} />,
+  'utilities': <Zap size={20} />,
+  'phone': <Smartphone size={20} />,
+  'internet': <Wifi size={20} />,
+  'gifts': <Gift size={20} />,
+  'health': <Heart size={20} />,
+  'work': <Briefcase size={20} />,
+  'travel': <Plane size={20} />,
+  'entertainment': <Music size={20} />,
+  'education': <Book size={20} />,
+  'other': <Smile size={20} />,
+  'salary': <Wallet size={20} />,
+  'investment': <TrendingUp size={20} />,
+  // Iconițe noi pentru Economii
+  'savings_stash': <Coins size={20} />,
+  'savings_bank': <Landmark size={20} />,
+  'savings_goal': <PiggyBank size={20} />
+};
