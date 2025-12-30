@@ -1,10 +1,11 @@
 import {
   ShoppingBag,
-  Coffee,
+  Cookie,
   Car,
   Home as HomeIcon,
   Zap,
   Smartphone,
+  UserStar,
   Wifi,
   Gift,
   Heart,
@@ -22,10 +23,11 @@ import {
 
 export const ICON_MAP = {
   'shopping': <ShoppingBag size={20} />,
-  'food': <Coffee size={20} />,
+  'food': <Cookie size={20} />,
   'transport': <Car size={20} />,
   'housing': <HomeIcon size={20} />,
   'utilities': <Zap size={20} />,
+  'user': <UserStar size={20} />,
   'phone': <Smartphone size={20} />,
   'internet': <Wifi size={20} />,
   'gifts': <Gift size={20} />,

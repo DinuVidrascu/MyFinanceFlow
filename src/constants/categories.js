@@ -12,6 +12,8 @@ export const CATEGORIES = [
   { id: 'shopping', label: 'Cumpărături', type: 'expense', icon: 'shopping' },
   { id: 'housing', label: 'Locuință', type: 'expense', icon: 'housing' },
   { id: 'transport', label: 'Transport', type: 'expense', icon: 'transport' },
+  { id: 'user', label: 'Personal', type: 'expense', icon: 'user' },
+  { id: 'phone', label: 'Telefon', type: 'expense', icon: 'phone' },
   { id: 'utilities', label: 'Utilități', type: 'expense', icon: 'utilities' },
   { id: 'entertainment', label: 'Distracție', type: 'expense', icon: 'entertainment' },
 ];
