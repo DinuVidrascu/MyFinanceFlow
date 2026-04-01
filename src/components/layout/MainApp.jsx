@@ -9,7 +9,8 @@ import { ICON_MAP } from '../../constants/icons';
 import { formatCurrency } from '../../utils/helpers';
 import { useFinanceData } from '../../hooks/useFinanceData';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
-import { WifiOff } from 'lucide-react';
+import { usePushNotifications } from '../../hooks/usePushNotifications';
+import { WifiOff, Wallet, Plus, RotateCcw, Home, List, CreditCard, ClipboardList, Calendar, Bell } from 'lucide-react';
 
 // Components
 import Dashboard from '../Dashboard';
@@ -25,12 +26,12 @@ import AddNoteModal from '../modals/AddNoteModal';
 import ImportModal from '../modals/ImportModal';
 import HistoryModal from '../modals/HistoryModal';
 
-// Icons
-import { Wallet, Plus, RotateCcw, Home, List, CreditCard, ClipboardList, Calendar } from 'lucide-react';
+
 
 export default function MainApp({ user, approved }) {
   const { transactions, debts, noteGroups } = useFinanceData(user, approved);
   const isOnline = useNetworkStatus();
+  const { permission, requestPermission } = usePushNotifications();
 
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -184,7 +185,14 @@ export default function MainApp({ user, approved }) {
       )}
       <header className={`bg-white p-6 shadow-sm sticky ${isOnline ? 'top-0' : 'top-[32px]'} z-20 flex justify-between items-center transition-all`}>
         <div><h1 className="font-black text-xl flex items-center gap-2 text-gray-800"><Wallet className="text-blue-600" /> FinanceFlow</h1></div>
-        <button onClick={() => setShowHistoryModal(true)} className="p-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100"><Calendar size={22} /></button>
+        <div className="flex items-center gap-3">
+          {permission !== 'granted' && isOnline && (
+            <button onClick={requestPermission} className="p-2 bg-purple-50 text-purple-600 rounded-xl border border-purple-100 flex items-center shadow-sm hover:bg-purple-100 transition">
+              <Bell size={22} className="animate-pulse" />
+            </button>
+          )}
+          <button onClick={() => setShowHistoryModal(true)} className="p-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100"><Calendar size={22} /></button>
+        </div>
       </header>
 
       <main className="max-w-md mx-auto p-4 w-full relative">
