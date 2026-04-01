@@ -1,23 +1,20 @@
 importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
 
-const urlParams = new URLSearchParams(location.search);
-
 const firebaseConfig = {
-  apiKey: urlParams.get('apiKey'),
-  authDomain: urlParams.get('authDomain'),
-  projectId: urlParams.get('projectId'),
-  storageBucket: urlParams.get('storageBucket'),
-  messagingSenderId: urlParams.get('messagingSenderId'),
-  appId: urlParams.get('appId')
+  apiKey: "AIzaSyA9pt_blZ3V8XY8EF8EhJigd2cyCHvQ_d4",
+  authDomain: "financeflow-sync-1655c.firebaseapp.com",
+  projectId: "financeflow-sync-1655c",
+  storageBucket: "financeflow-sync-1655c.firebasestorage.app",
+  messagingSenderId: "798966993670",
+  appId: "1:798966993670:web:c8943998f5b2a921568487"
 };
 
-if (firebaseConfig.apiKey) {
-  firebase.initializeApp(firebaseConfig);
-  const messaging = firebase.messaging();
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
 
-  messaging.onBackgroundMessage((payload) => {
-    console.log('[firebase-messaging-sw.js] Received background message ', payload);
+messaging.onBackgroundMessage((payload) => {
+  console.log('[firebase-messaging-sw.js] Received background message ', payload);
     const notificationTitle = payload.notification.title || "FinanceFlow Alert";
     const notificationOptions = {
       body: payload.notification.body || "Să nu uiți să treci cheltuielile!",
@@ -25,5 +22,4 @@ if (firebaseConfig.apiKey) {
     };
 
     self.registration.showNotification(notificationTitle, notificationOptions);
-  });
-}
+});

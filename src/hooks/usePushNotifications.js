@@ -13,8 +13,8 @@ export function usePushNotifications() {
       if (permResult === 'granted') {
         const messaging = getMessaging(app);
 
-        // Înregistrăm Service Worker-ul dinamic pentru a-i trimite variabilele din .env
-        const swUrl = `/firebase-messaging-sw.js?apiKey=${process.env.REACT_APP_FIREBASE_API_KEY}&authDomain=${process.env.REACT_APP_FIREBASE_AUTH_DOMAIN}&projectId=${process.env.REACT_APP_FIREBASE_PROJECT_ID}&storageBucket=${process.env.REACT_APP_FIREBASE_STORAGE_BUCKET}&messagingSenderId=${process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID}&appId=${process.env.REACT_APP_FIREBASE_APP_ID}`;
+        // Înregistrăm Service Worker-ul standard
+        const swUrl = '/firebase-messaging-sw.js';
         
         const registration = await navigator.serviceWorker.register(swUrl);
         console.log('SW Inregistrat pt Meseje:', registration);
