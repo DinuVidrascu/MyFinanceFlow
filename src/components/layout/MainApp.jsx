@@ -8,6 +8,8 @@ import { CATEGORIES } from '../../constants/categories';
 import { ICON_MAP } from '../../constants/icons';
 import { formatCurrency } from '../../utils/helpers';
 import { useFinanceData } from '../../hooks/useFinanceData';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+import { WifiOff } from 'lucide-react';
 
 // Components
 import Dashboard from '../Dashboard';
@@ -28,6 +30,7 @@ import { Wallet, Plus, RotateCcw, Home, List, CreditCard, ClipboardList, Calenda
 
 export default function MainApp({ user, approved }) {
   const { transactions, debts, noteGroups } = useFinanceData(user, approved);
+  const isOnline = useNetworkStatus();
 
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -174,7 +177,12 @@ export default function MainApp({ user, approved }) {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 pb-24 relative">
-      <header className="bg-white p-6 shadow-sm sticky top-0 z-20 flex justify-between items-center">
+      {!isOnline && (
+        <div className="bg-orange-500 text-white text-xs font-bold py-2 px-4 flex justify-center items-center gap-2 shadow-sm animate-fade-in z-50 sticky top-0">
+          <WifiOff size={16} /> Mod Offline - Sincronizare la reconectare
+        </div>
+      )}
+      <header className={`bg-white p-6 shadow-sm sticky ${isOnline ? 'top-0' : 'top-[32px]'} z-20 flex justify-between items-center transition-all`}>
         <div><h1 className="font-black text-xl flex items-center gap-2 text-gray-800"><Wallet className="text-blue-600" /> FinanceFlow</h1></div>
         <button onClick={() => setShowHistoryModal(true)} className="p-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100"><Calendar size={22} /></button>
       </header>
