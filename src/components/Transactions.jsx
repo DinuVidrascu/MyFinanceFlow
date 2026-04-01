@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, Edit2, Trash2, Circle } from 'lucide-react';
+import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function Transactions({ 
   transactions, 
@@ -10,6 +11,31 @@ export default function Transactions({
   ICON_MAP, 
   CATEGORIES 
 }) {
+  const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
+  const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
+  const totalSavings = transactions.filter(t => t.type === 'savings').reduce((sum, t) => sum + Number(t.amount), 0);
+  const balance = totalIncome - totalExpense - totalSavings;
+
+  const chartData = [
+    { name: 'Venituri', value: totalIncome, color: '#3b82f6' }, // blue
+    { name: 'Cheltuieli', value: totalExpense, color: '#ef4444' }, // red
+    { name: 'Balanță', value: balance, color: '#22c55e' } // green
+  ];
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-slate-800 p-2 rounded-lg border border-gray-100 dark:border-slate-700 shadow-xl">
+          <p className="text-xs font-bold text-gray-800 dark:text-white capitalize">{payload[0].payload.name}</p>
+          <p className="text-sm font-black" style={{ color: payload[0].payload.color }}>
+            {formatCurrency(payload[0].value)}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-4 pb-20 tab-animate">
       <div className="flex justify-between items-center">
@@ -18,6 +44,47 @@ export default function Transactions({
           <Plus size={18} /> <span className="text-sm font-medium">Adaugă</span>
         </button>
       </div>
+
+      {/* Grafic Circular Compact */}
+      {transactions.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-slate-700 transition-colors duration-300 flex items-center gap-6">
+          <div className="h-28 w-28 flex-shrink-0 relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={30}
+                  outerRadius={50}
+                  paddingAngle={5}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          
+          <div className="flex-1 flex flex-col justify-center gap-2">
+            {chartData.map((entry, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }}></div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{entry.name}</span>
+                </div>
+                <span className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                  {formatCurrency(entry.value)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
      
       {transactions.length === 0 ? (
         <div className="text-center py-10 text-gray-400">
