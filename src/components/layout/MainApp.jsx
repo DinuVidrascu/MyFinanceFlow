@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { db } from '../../firebase/config'; 
 import { collection, addDoc, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 
@@ -28,7 +29,7 @@ import { Wallet, Plus, RotateCcw, Home, List, CreditCard, ClipboardList, Calenda
 export default function MainApp({ user, approved }) {
   const { transactions, debts, noteGroups } = useFinanceData(user, approved);
 
-  const [activeTab, setActiveTab] = useState('dashboard');
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [viewHistoryMonth, setViewHistoryMonth] = useState(null);
@@ -178,11 +179,14 @@ export default function MainApp({ user, approved }) {
         <button onClick={() => setShowHistoryModal(true)} className="p-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100"><Calendar size={22} /></button>
       </header>
 
-      <main className="max-w-md mx-auto p-4">
-        {activeTab === 'dashboard' && <Dashboard currentMonthTotals={currentMonthTotals} transactions={transactions} setActiveTab={setActiveTab} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} />}
-        {activeTab === 'transactions' && <Transactions transactions={transactions} openAddModal={() => { setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} />}
-        {activeTab === 'debts' && <Debts debts={debts} openDebtModal={() => setShowDebtModal(true)} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => { if (window.confirm("Ștergi datoria?")) deleteDoc(doc(db, 'users', user.uid, 'debts', id)); }} formatCurrency={formatCurrency} />}
-        {activeTab === 'notes' && <Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => { if (id && window.confirm("Ștergi această listă?")) deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)); }} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} />}
+      <main className="max-w-md mx-auto p-4 w-full relative">
+        <Routes>
+          <Route path="/" element={<Dashboard currentMonthTotals={currentMonthTotals} transactions={transactions} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} />} />
+          <Route path="/transactions" element={<Transactions transactions={transactions} openAddModal={() => { setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} />} />
+          <Route path="/debts" element={<Debts debts={debts} openDebtModal={() => setShowDebtModal(true)} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => { if (window.confirm("Ștergi datoria?")) deleteDoc(doc(db, 'users', user.uid, 'debts', id)); }} formatCurrency={formatCurrency} />} />
+          <Route path="/notes" element={<Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => { if (id && window.confirm("Ștergi această listă?")) deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)); }} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
 
       {/* Modale */}
@@ -211,11 +215,11 @@ export default function MainApp({ user, approved }) {
 
       {/* Navigare Inferioară */}
       <nav className="fixed bottom-0 w-full bg-white border-t border-gray-100 p-4 flex justify-around items-center h-20 shadow-lg z-30">
-        <TabButton id="dashboard" icon={Home} label="Acasă" activeTab={activeTab} setActiveTab={setActiveTab} />
-        <TabButton id="transactions" icon={List} label="Tranzacții" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <TabButton to="/" icon={Home} label="Acasă" />
+        <TabButton to="/transactions" icon={List} label="Tranzacții" />
         <div className="w-12"></div>
-        <TabButton id="debts" icon={CreditCard} label="Datorii" activeTab={activeTab} setActiveTab={setActiveTab} />
-        <TabButton id="notes" icon={ClipboardList} label="Notițe" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <TabButton to="/debts" icon={CreditCard} label="Datorii" />
+        <TabButton to="/notes" icon={ClipboardList} label="Notițe" />
         <button onClick={() => { setEditingId(null); setShowAddModal(true); }} className="absolute left-1/2 -top-6 transform -translate-x-1/2 bg-blue-600 text-white p-4 rounded-full shadow-xl border-4 border-gray-50 hover:scale-110 transition-transform"><Plus size={28} /></button>
       </nav>
     </div>

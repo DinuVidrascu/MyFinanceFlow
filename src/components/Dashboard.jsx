@@ -1,10 +1,10 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, PiggyBank, Circle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Dashboard({ 
   currentMonthTotals, 
   transactions, 
-  setActiveTab, 
   formatCurrency, 
   ICON_MAP, 
   CATEGORIES 
@@ -82,7 +82,7 @@ export default function Dashboard({
       <div>
         <div className="flex justify-between items-center mb-3">
           <h3 className="font-bold text-gray-800">Recent</h3>
-          <button onClick={() => setActiveTab('transactions')} className="text-blue-600 text-sm font-medium">Vezi tot</button>
+          <Link to="/transactions" className="text-blue-600 text-sm font-medium">Vezi tot</Link>
         </div>
         <div className="space-y-3">
           {transactions.slice(0, 3).map(t => {
