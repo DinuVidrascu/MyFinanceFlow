@@ -23,3 +23,26 @@ messaging.onBackgroundMessage((payload) => {
 
     self.registration.showNotification(notificationTitle, notificationOptions);
 });
+
+// ==========================================
+// CERINȚE OBLIGATORII PENTRU PWA (Instalare)
+// Pentru ca Google Chrome să afișeze butonul "Install App",
+// un Service Worker trebuie să capteze evenimentul de 'fetch'
+// ==========================================
+
+self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Installed!');
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('[Service Worker] Activated!');
+  // Preia imediat controlul tuturor paginilor deschise
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('fetch', (event) => {
+  // Un handler pasiv de fetch e suficient ca browser-ul să
+  // valideze aplicația ca fiind o PWA instalabilă!
+});
+

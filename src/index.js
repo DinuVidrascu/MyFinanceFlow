@@ -16,6 +16,5 @@ root.render(
 );
 
 // If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
-serviceWorkerRegistration.register();
+// Oprim worker-ul vechi de la CRA ca să lăsăm firebase-messaging-sw.js să ne guverneze PWA-ul.
+serviceWorkerRegistration.unregister();
