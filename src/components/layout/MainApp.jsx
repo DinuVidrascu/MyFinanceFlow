@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { db } from '../../firebase/config'; 
 import { collection, addDoc, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 
@@ -29,7 +30,19 @@ import HistoryModal from '../modals/HistoryModal';
 
 
 
+const PageWrapper = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, x: 15 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: -15 }}
+    transition={{ duration: 0.2, ease: "easeOut" }}
+  >
+    {children}
+  </motion.div>
+);
+
 export default function MainApp({ user, approved }) {
+  const location = useLocation();
   const { transactions, debts, noteGroups } = useFinanceData(user, approved);
   const isOnline = useNetworkStatus();
   const { permission, requestPermission } = usePushNotifications();
@@ -201,13 +214,15 @@ export default function MainApp({ user, approved }) {
       </header>
 
       <main className="max-w-md mx-auto p-4 w-full relative">
-        <Routes>
-          <Route path="/" element={<Dashboard currentMonthTotals={currentMonthTotals} transactions={transactions} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} />} />
-          <Route path="/transactions" element={<Transactions transactions={transactions} openAddModal={() => { setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} />} />
-          <Route path="/debts" element={<Debts debts={debts} openDebtModal={() => setShowDebtModal(true)} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => { if (window.confirm("Ștergi datoria?")) deleteDoc(doc(db, 'users', user.uid, 'debts', id)); }} formatCurrency={formatCurrency} />} />
-          <Route path="/notes" element={<Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => { if (id && window.confirm("Ștergi această listă?")) deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)); }} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<PageWrapper><Dashboard currentMonthTotals={currentMonthTotals} transactions={transactions} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
+            <Route path="/transactions" element={<PageWrapper><Transactions transactions={transactions} openAddModal={() => { setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
+            <Route path="/debts" element={<PageWrapper><Debts debts={debts} openDebtModal={() => setShowDebtModal(true)} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => { if (window.confirm("Ștergi datoria?")) deleteDoc(doc(db, 'users', user.uid, 'debts', id)); }} formatCurrency={formatCurrency} /></PageWrapper>} />
+            <Route path="/notes" element={<PageWrapper><Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => { if (id && window.confirm("Ștergi această listă?")) deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)); }} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} /></PageWrapper>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AnimatePresence>
       </main>
 
       {/* Modale */}
