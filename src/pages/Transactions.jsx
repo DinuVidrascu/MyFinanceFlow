@@ -3,14 +3,14 @@ import { Plus, Edit2, Trash2, Circle, Download } from 'lucide-react';
 import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import * as XLSX from 'xlsx';
 
-export default function Transactions({ 
-  transactions, 
-  openAddModal, 
-  handleEditClick, 
-  handleDeleteTransaction, 
-  formatCurrency, 
-  ICON_MAP, 
-  CATEGORIES 
+export default function Transactions({
+  transactions,
+  openAddModal,
+  handleEditClick,
+  handleDeleteTransaction,
+  formatCurrency,
+  ICON_MAP,
+  CATEGORIES
 }) {
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0);
   const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0);
@@ -51,7 +51,7 @@ export default function Transactions({
     });
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    
+
     // Setăm lățimi flexibile pentru coloane ca să arate profesionist
     worksheet['!cols'] = [
       { wch: 12 }, // Data
@@ -63,7 +63,7 @@ export default function Transactions({
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Tranzactii");
-    
+
     XLSX.writeFile(workbook, `FinanceFlow_${new Date().toLocaleDateString('ro-RO').replace(/\./g, '-')}.xlsx`);
   };
 
@@ -74,7 +74,7 @@ export default function Transactions({
         <div className="flex gap-2">
           {transactions.length > 0 && (
             <button onClick={handleExportExcel} className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-2 rounded-lg flex items-center gap-1 shadow-sm border border-emerald-100 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition">
-              <Download size={18} /> <span className="text-sm font-medium">Excel</span>
+              <Download size={18} /> <span className="text-sm font-medium">Descarcă</span>
             </button>
           )}
           <button onClick={openAddModal} className="bg-blue-600 text-white p-2 rounded-lg flex items-center gap-1 shadow-md hover:bg-blue-700 transition">
@@ -107,7 +107,7 @@ export default function Transactions({
               </PieChart>
             </ResponsiveContainer>
           </div>
-          
+
           <div className="flex-1 flex flex-col justify-center gap-2">
             {chartData.map((entry, index) => (
               <div key={index} className="flex justify-between items-center">
@@ -123,7 +123,7 @@ export default function Transactions({
           </div>
         </div>
       )}
-     
+
       {transactions.length === 0 ? (
         <div className="text-center py-10 text-gray-400">
           <p>Nu există tranzacții înregistrate.</p>
@@ -132,7 +132,7 @@ export default function Transactions({
         transactions.map(t => {
           const categoryObj = CATEGORIES.find(c => c.id === t.category);
           const iconKey = categoryObj ? categoryObj.icon : t.category;
-         
+
           let amountClass = 'text-gray-800 dark:text-gray-200';
           let bgClass = 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300';
           let sign = '-';
@@ -151,7 +151,7 @@ export default function Transactions({
             <div key={t.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex items-center justify-between group transition-colors duration-300">
               <div className="flex items-center gap-3">
                 <div className={`p-2.5 rounded-full ${bgClass}`}>
-                  {ICON_MAP[iconKey] || <Circle size={20}/>}
+                  {ICON_MAP[iconKey] || <Circle size={20} />}
                 </div>
                 <div>
                   <p className="font-semibold text-gray-800 dark:text-gray-200">{t.description}</p>

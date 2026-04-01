@@ -15,10 +15,10 @@ import { useDarkMode } from '../../hooks/useDarkMode';
 import { WifiOff, Wallet, Plus, RotateCcw, Home, List, CreditCard, ClipboardList, Calendar, Bell, Moon, Sun } from 'lucide-react';
 
 // Components
-import Dashboard from '../Dashboard';
-import Transactions from '../Transactions';
-import Debts from '../Debts';
-import Notes from '../Notes';
+import Dashboard from '../../pages/Dashboard';
+import Transactions from '../../pages/Transactions';
+import Debts from '../../pages/Debts';
+import Notes from '../../pages/Notes';
 import TabButton from '../common/TabButton';
 
 // Modals
@@ -256,7 +256,7 @@ export default function MainApp({ user, approved }) {
         <div className="w-12"></div>
         <TabButton to="/debts" icon={CreditCard} label="Datorii" />
         <TabButton to="/notes" icon={ClipboardList} label="Notițe" />
-        <button onClick={() => { setEditingId(null); setShowAddModal(true); }} className="absolute left-1/2 -top-6 transform -translate-x-1/2 bg-blue-600 dark:bg-blue-500 text-white p-4 rounded-full shadow-xl border-4 border-gray-50 dark:border-slate-900 hover:scale-110 transition-transform"><Plus size={28} /></button>
+        <button aria-label="Adaugă tranzacție nouă" onClick={() => { setEditingId(null); setShowAddModal(true); }} className="absolute left-1/2 -top-6 transform -translate-x-1/2 bg-blue-600 dark:bg-blue-500 text-white p-4 rounded-full shadow-xl border-4 border-gray-50 dark:border-slate-900 hover:scale-110 transition-transform"><Plus size={28} /></button>
       </nav>
     </div>
   );
