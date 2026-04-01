@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Circle } from 'lucide-react';
+import { X } from 'lucide-react';
 import { CATEGORIES } from '../../constants/categories';
 import { ICON_MAP } from '../../constants/icons';
 
