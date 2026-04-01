@@ -60,7 +60,7 @@ export default function Dashboard({
           <h3 className="font-bold text-gray-800 dark:text-white">Proiecții Economisire</h3>
         </div>
        
-        {currentMonthTotals.balance > 0 ? (
+        {currentMonthTotals.savings > 0 ? (
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-100 dark:border-purple-800/50">
               <p className="text-xs text-purple-600 dark:text-purple-400 font-semibold uppercase">6 Luni</p>
@@ -73,7 +73,7 @@ export default function Dashboard({
           </div>
         ) : (
           <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
-            Economisește mai mult în luna curentă pentru a vedea proiecții.
+            Adaugă tranzacții de tip "Economii" pentru a genera proiecții financiare.
           </div>
         )}
       </div>

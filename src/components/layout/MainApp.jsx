@@ -84,8 +84,8 @@ export default function MainApp({ user, approved }) {
       expense: monthExpense, 
       savings: monthSavings, 
       balance: realBalance, 
-      projection6m: realBalance * 6, 
-      projection12m: realBalance * 12 
+      projection6m: monthSavings * 6, 
+      projection12m: monthSavings * 12 
     };
   }, [transactions]);
 
