@@ -26,15 +26,15 @@ export default function AddNoteModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 transition-colors duration-300"
       onClick={(e) => { if (e.target === e.currentTarget) setShowNoteModal(false); }}
     >
-      <div className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl animate-slide-up flex flex-col max-h-[90vh]">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl animate-slide-up flex flex-col max-h-[90vh] border border-transparent dark:border-slate-800">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-gray-800">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white">
             {currentGroup.id ? 'Editează Lista' : 'Listă Nouă'}
           </h3>
-          <button onClick={() => setShowNoteModal(false)} className="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 transition">
+          <button onClick={() => setShowNoteModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition">
             <X size={24} />
           </button>
         </div>
@@ -42,20 +42,20 @@ export default function AddNoteModal({
         <div className="flex-1 overflow-y-auto pr-2 -mr-2">
           <div className="space-y-6">
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Nume Categorie</label>
+              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">Nume Categorie</label>
               <input
                 type="text"
                 value={currentGroup.title}
                 onChange={(e) => setCurrentGroup({...currentGroup, title: e.target.value})}
-                className="w-full text-xl font-bold text-gray-800 border-b-2 border-gray-200 focus:border-indigo-600 outline-none py-2 bg-transparent"
+                className="w-full text-xl font-bold text-gray-800 dark:text-white border-b-2 border-gray-200 dark:border-slate-700 focus:border-indigo-600 dark:focus:border-indigo-500 outline-none py-2 bg-transparent placeholder-gray-400 dark:placeholder-gray-600"
                 placeholder="Ex: Renovare Baie"
               />
             </div>
 
             <div>
               <div className="flex justify-between items-end mb-2">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Articole & Costuri</label>
-                <span className="text-xs font-bold text-indigo-600">
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">Articole & Costuri</label>
+                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
                   Total: {formatCurrency(getGroupTotal(currentGroup.items))}
                 </span>
               </div>
@@ -69,7 +69,7 @@ export default function AddNoteModal({
                         value={item.text}
                         onChange={(e) => handleSubItemChange(item.id, 'text', e.target.value)}
                         placeholder="Nume articol"
-                        className="w-full p-2 bg-gray-50 rounded-lg border border-gray-200 text-sm focus:ring-1 focus:ring-indigo-500 outline-none"
+                        className="w-full p-2 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 text-sm focus:ring-1 focus:ring-indigo-500 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-600"
                       />
                     </div>
                     <div className="w-24">
@@ -78,12 +78,12 @@ export default function AddNoteModal({
                         value={item.cost}
                         onChange={(e) => handleSubItemChange(item.id, 'cost', e.target.value)}
                         placeholder="0"
-                        className="w-full p-2 bg-gray-50 rounded-lg border border-gray-200 text-sm focus:ring-1 focus:ring-indigo-500 outline-none text-right"
+                        className="w-full p-2 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 text-sm focus:ring-1 focus:ring-indigo-500 outline-none text-right text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-600"
                       />
                     </div>
                     <button
                       onClick={() => handleRemoveSubItem(item.id)}
-                      className="p-2 text-gray-300 hover:text-red-500 transition"
+                      className="p-2 text-gray-300 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition"
                     >
                       <X size={18} />
                     </button>
@@ -93,7 +93,7 @@ export default function AddNoteModal({
 
               <button
                 onClick={handleAddSubItem}
-                className="mt-3 text-sm text-indigo-600 font-medium hover:text-indigo-800 flex items-center gap-1"
+                className="mt-3 text-sm text-indigo-600 dark:text-indigo-400 font-medium hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1"
               >
                 <Plus size={16} /> Adaugă Articol
               </button>
@@ -101,7 +101,7 @@ export default function AddNoteModal({
           </div>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-gray-100">
+        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-slate-800/50">
           <button
             onClick={onSaveClick}
             className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 active:scale-[0.98] transition-all"
