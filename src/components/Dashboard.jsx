@@ -12,7 +12,7 @@ export default function Dashboard({
   return (
     <div className="space-y-6 tab-animate">
       {/* Balance Card */}
-      <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-800 dark:to-slate-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden transition-colors duration-300">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-10 -mt-10"></div>
         <div className="flex justify-between items-start mb-1">
           <p className="text-blue-100 text-sm font-medium">Balanță Disponibilă</p>
@@ -54,25 +54,25 @@ export default function Dashboard({
       </div>
 
       {/* Savings Projections */}
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+      <div className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 transition-colors duration-300">
         <div className="flex items-center gap-2 mb-4">
-          <PiggyBank className="text-purple-500" size={20} />
-          <h3 className="font-bold text-gray-800">Proiecții Economisire</h3>
+          <PiggyBank className="text-purple-500 dark:text-purple-400" size={20} />
+          <h3 className="font-bold text-gray-800 dark:text-white">Proiecții Economisire</h3>
         </div>
        
         {currentMonthTotals.balance > 0 ? (
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
-              <p className="text-xs text-purple-600 font-semibold uppercase">6 Luni</p>
-              <p className="text-lg font-bold text-purple-800">{formatCurrency(currentMonthTotals.projection6m)}</p>
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-100 dark:border-purple-800/50">
+              <p className="text-xs text-purple-600 dark:text-purple-400 font-semibold uppercase">6 Luni</p>
+              <p className="text-lg font-bold text-purple-800 dark:text-purple-300">{formatCurrency(currentMonthTotals.projection6m)}</p>
             </div>
-            <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
-              <p className="text-xs text-purple-600 font-semibold uppercase">1 An</p>
-              <p className="text-lg font-bold text-purple-800">{formatCurrency(currentMonthTotals.projection12m)}</p>
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-100 dark:border-purple-800/50">
+              <p className="text-xs text-purple-600 dark:text-purple-400 font-semibold uppercase">1 An</p>
+              <p className="text-lg font-bold text-purple-800 dark:text-purple-300">{formatCurrency(currentMonthTotals.projection12m)}</p>
             </div>
           </div>
         ) : (
-          <div className="text-center py-4 text-gray-500 text-sm">
+          <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
             Economisește mai mult în luna curentă pentru a vedea proiecții.
           </div>
         )}
@@ -81,8 +81,8 @@ export default function Dashboard({
       {/* Recent Transactions Mini */}
       <div>
         <div className="flex justify-between items-center mb-3">
-          <h3 className="font-bold text-gray-800">Recent</h3>
-          <Link to="/transactions" className="text-blue-600 text-sm font-medium">Vezi tot</Link>
+          <h3 className="font-bold text-gray-800 dark:text-white">Recent</h3>
+          <Link to="/transactions" className="text-blue-600 dark:text-blue-400 text-sm font-medium">Vezi tot</Link>
         </div>
         <div className="space-y-3">
           {transactions.slice(0, 3).map(t => {
@@ -90,31 +90,31 @@ export default function Dashboard({
             const iconKey = categoryObj ? categoryObj.icon : t.category;
             const categoryLabel = categoryObj ? categoryObj.label : t.category;
            
-            let amountClass = 'text-gray-800';
-            let bgClass = 'bg-gray-100 text-gray-600';
+            let amountClass = 'text-gray-800 dark:text-gray-200';
+            let bgClass = 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300';
             let sign = '-';
             if (t.type === 'income') {
-              amountClass = 'text-green-600';
-              bgClass = 'bg-green-100 text-green-600';
+              amountClass = 'text-green-600 dark:text-green-400';
+              bgClass = 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
               sign = '+';
             } else if (t.type === 'expense') {
-              amountClass = 'text-gray-800';
-              bgClass = 'bg-red-100 text-red-600';
+              amountClass = 'text-gray-800 dark:text-gray-200';
+              bgClass = 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
               sign = '-';
             } else if (t.type === 'savings') {
-              amountClass = 'text-purple-600';
-              bgClass = 'bg-purple-100 text-purple-600';
+              amountClass = 'text-purple-600 dark:text-purple-400';
+              bgClass = 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
               sign = '';
             }
             return (
-              <div key={t.id} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+              <div key={t.id} className="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex items-center justify-between transition-colors duration-300">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-full ${bgClass}`}>
                     {ICON_MAP[iconKey] || <Circle size={20}/>}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-gray-800">{t.description}</p>
-                    <p className="text-xs text-gray-400">{categoryLabel}</p>
+                    <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">{t.description}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{categoryLabel}</p>
                   </div>
                 </div>
                 <span className={`font-bold ${amountClass}`}>

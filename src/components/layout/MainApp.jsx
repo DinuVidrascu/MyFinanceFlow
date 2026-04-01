@@ -10,7 +10,8 @@ import { formatCurrency } from '../../utils/helpers';
 import { useFinanceData } from '../../hooks/useFinanceData';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
-import { WifiOff, Wallet, Plus, RotateCcw, Home, List, CreditCard, ClipboardList, Calendar, Bell } from 'lucide-react';
+import { useDarkMode } from '../../hooks/useDarkMode';
+import { WifiOff, Wallet, Plus, RotateCcw, Home, List, CreditCard, ClipboardList, Calendar, Bell, Moon, Sun } from 'lucide-react';
 
 // Components
 import Dashboard from '../Dashboard';
@@ -32,6 +33,7 @@ export default function MainApp({ user, approved }) {
   const { transactions, debts, noteGroups } = useFinanceData(user, approved);
   const isOnline = useNetworkStatus();
   const { permission, requestPermission } = usePushNotifications();
+  const [isDark, setIsDark] = useDarkMode();
 
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -177,21 +179,24 @@ export default function MainApp({ user, approved }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 pb-24 relative">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 pb-24 relative transition-colors duration-300">
       {!isOnline && (
         <div className="bg-orange-500 text-white text-xs font-bold py-2 px-4 flex justify-center items-center gap-2 shadow-sm animate-fade-in z-50 sticky top-0">
           <WifiOff size={16} /> Mod Offline - Sincronizare la reconectare
         </div>
       )}
-      <header className={`bg-white p-6 shadow-sm sticky ${isOnline ? 'top-0' : 'top-[32px]'} z-20 flex justify-between items-center transition-all`}>
-        <div><h1 className="font-black text-xl flex items-center gap-2 text-gray-800"><Wallet className="text-blue-600" /> FinanceFlow</h1></div>
+      <header className={`bg-white dark:bg-slate-800 p-6 shadow-sm sticky ${isOnline ? 'top-0' : 'top-[32px]'} z-20 flex justify-between items-center transition-all duration-300`}>
+        <div><h1 className="font-black text-xl flex items-center gap-2 text-gray-800 dark:text-white"><Wallet className="text-blue-600 dark:text-blue-400" /> FinanceFlow</h1></div>
         <div className="flex items-center gap-3">
+          <button onClick={() => setIsDark(!isDark)} className="p-2 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-600 transition">
+            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
           {permission !== 'granted' && isOnline && (
-            <button onClick={requestPermission} className="p-2 bg-purple-50 text-purple-600 rounded-xl border border-purple-100 flex items-center shadow-sm hover:bg-purple-100 transition">
-              <Bell size={22} className="animate-pulse" />
+            <button onClick={requestPermission} className="p-2 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl border border-purple-100 dark:border-purple-800/50 flex items-center shadow-sm hover:bg-purple-100 dark:hover:bg-purple-900/50 transition">
+              <Bell size={20} className="animate-pulse" />
             </button>
           )}
-          <button onClick={() => setShowHistoryModal(true)} className="p-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100"><Calendar size={22} /></button>
+          <button onClick={() => setShowHistoryModal(true)} className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-100 dark:border-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition"><Calendar size={20} /></button>
         </div>
       </header>
 
@@ -230,13 +235,13 @@ export default function MainApp({ user, approved }) {
       )}
 
       {/* Navigare Inferioară */}
-      <nav className="fixed bottom-0 w-full bg-white border-t border-gray-100 p-4 flex justify-around items-center h-20 shadow-lg z-30">
+      <nav className="fixed bottom-0 w-full bg-white dark:bg-slate-800 border-t border-gray-100 dark:border-slate-700/50 p-4 flex justify-around items-center h-20 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] transition-colors duration-300 z-30">
         <TabButton to="/" icon={Home} label="Acasă" />
         <TabButton to="/transactions" icon={List} label="Tranzacții" />
         <div className="w-12"></div>
         <TabButton to="/debts" icon={CreditCard} label="Datorii" />
         <TabButton to="/notes" icon={ClipboardList} label="Notițe" />
-        <button onClick={() => { setEditingId(null); setShowAddModal(true); }} className="absolute left-1/2 -top-6 transform -translate-x-1/2 bg-blue-600 text-white p-4 rounded-full shadow-xl border-4 border-gray-50 hover:scale-110 transition-transform"><Plus size={28} /></button>
+        <button onClick={() => { setEditingId(null); setShowAddModal(true); }} className="absolute left-1/2 -top-6 transform -translate-x-1/2 bg-blue-600 dark:bg-blue-500 text-white p-4 rounded-full shadow-xl border-4 border-gray-50 dark:border-slate-900 hover:scale-110 transition-transform"><Plus size={28} /></button>
       </nav>
     </div>
   );
