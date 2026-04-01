@@ -1,6 +1,7 @@
 import React from 'react';
-import { Plus, Edit2, Trash2, Circle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Circle, Download } from 'lucide-react';
 import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import * as XLSX from 'xlsx';
 
 export default function Transactions({ 
   transactions, 
@@ -36,13 +37,50 @@ export default function Transactions({
     return null;
   };
 
+  const handleExportExcel = () => {
+    const dataToExport = transactions.map(t => {
+      const catObj = CATEGORIES.find(c => c.id === t.category);
+      const catName = catObj ? catObj.label : t.category;
+      return {
+        'Data': new Date(t.date).toLocaleDateString('ro-RO'),
+        'Descriere': t.description,
+        'Categorie': catName,
+        'Tip Tranzacție': t.type === 'income' ? 'Venit' : t.type === 'expense' ? 'Cheltuială' : 'Economie',
+        'Sumă (Lei)': Number(t.amount)
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    
+    // Setăm lățimi flexibile pentru coloane ca să arate profesionist
+    worksheet['!cols'] = [
+      { wch: 12 }, // Data
+      { wch: 30 }, // Descriere
+      { wch: 15 }, // Categorie
+      { wch: 15 }, // Tip
+      { wch: 15 }  // Suma
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tranzactii");
+    
+    XLSX.writeFile(workbook, `FinanceFlow_${new Date().toLocaleDateString('ro-RO').replace(/\./g, '-')}.xlsx`);
+  };
+
   return (
     <div className="space-y-4 pb-20 tab-animate">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-bold dark:text-white">Toate Tranzacțiile</h2>
-        <button onClick={openAddModal} className="bg-blue-600 text-white p-2 rounded-lg flex items-center gap-1 shadow-md hover:bg-blue-700">
-          <Plus size={18} /> <span className="text-sm font-medium">Adaugă</span>
-        </button>
+        <div className="flex gap-2">
+          {transactions.length > 0 && (
+            <button onClick={handleExportExcel} className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-2 rounded-lg flex items-center gap-1 shadow-sm border border-emerald-100 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition">
+              <Download size={18} /> <span className="text-sm font-medium">Excel</span>
+            </button>
+          )}
+          <button onClick={openAddModal} className="bg-blue-600 text-white p-2 rounded-lg flex items-center gap-1 shadow-md hover:bg-blue-700 transition">
+            <Plus size={18} /> <span className="text-sm font-medium">Adaugă</span>
+          </button>
+        </div>
       </div>
 
       {/* Grafic Circular Compact */}
