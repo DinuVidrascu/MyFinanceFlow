@@ -58,6 +58,9 @@ export default function MainApp({ user, approved }) {
 
   const [editingId, setEditingId] = useState(null);
   const [newTrans, setNewTrans] = useState({ type: 'expense', amount: '', category: 'food', description: '', date: '' });
+  
+  const resetTransForm = () => setNewTrans({ type: 'expense', amount: '', category: 'food', description: '', date: '' });
+
   const [editingDebtId, setEditingDebtId] = useState(null);
   const [newDebt, setNewDebt] = useState({ name: '', total: '', remaining: '', monthlyPayment: '' });
   const [showDebtModal, setShowDebtModal] = useState(false);
@@ -110,7 +113,8 @@ export default function MainApp({ user, approved }) {
   // --- HANDLERS ---
   const handleSaveTransaction = async () => {
     if (!user || !newTrans.amount) return;
-    const data = { ...newTrans, amount: Number(newTrans.amount), date: newTrans.date || new Date().toISOString() };
+    const { id, ...cleanTrans } = newTrans;
+    const data = { ...cleanTrans, amount: Number(newTrans.amount), date: newTrans.date || new Date().toISOString() };
     if (editingId) {
       await setDoc(doc(db, 'users', user.uid, 'transactions', editingId), data);
     } else {
@@ -118,6 +122,7 @@ export default function MainApp({ user, approved }) {
     }
     setShowAddModal(false);
     setEditingId(null);
+    resetTransForm();
   };
 
   const handleDeleteTransaction = async (id) => {
@@ -217,7 +222,7 @@ export default function MainApp({ user, approved }) {
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageWrapper><Dashboard currentMonthTotals={currentMonthTotals} transactions={transactions} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
-            <Route path="/transactions" element={<PageWrapper><Transactions transactions={transactions} openAddModal={() => { setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
+            <Route path="/transactions" element={<PageWrapper><Transactions transactions={transactions} openAddModal={() => { resetTransForm(); setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
             <Route path="/debts" element={<PageWrapper><Debts debts={debts} openDebtModal={() => setShowDebtModal(true)} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => { if (window.confirm("Ștergi datoria?")) deleteDoc(doc(db, 'users', user.uid, 'debts', id)); }} formatCurrency={formatCurrency} /></PageWrapper>} />
             <Route path="/notes" element={<PageWrapper><Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => { if (id && window.confirm("Ștergi această listă?")) deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)); }} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} /></PageWrapper>} />
             <Route path="*" element={<Navigate to="/" replace />} />
@@ -238,7 +243,7 @@ export default function MainApp({ user, approved }) {
         setShowImportModal={setShowImportModal} formatCurrency={formatCurrency}
         handleDeleteTransaction={handleDeleteTransaction}
         handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }}
-        openAddModalForMonth={(monthKey) => { setNewTrans({ ...newTrans, date: `${monthKey}-01` }); setEditingId(null); setShowAddModal(true); }}
+        openAddModalForMonth={(monthKey) => { resetTransForm(); setNewTrans(prev => ({ ...prev, date: `${monthKey}-01` })); setEditingId(null); setShowAddModal(true); }}
       />
 
       {/* Undo Toast */}
@@ -256,7 +261,7 @@ export default function MainApp({ user, approved }) {
         <div className="w-12"></div>
         <TabButton to="/debts" icon={CreditCard} label="Datorii" />
         <TabButton to="/notes" icon={ClipboardList} label="Notițe" />
-        <button aria-label="Adaugă tranzacție nouă" onClick={() => { setEditingId(null); setShowAddModal(true); }} className="absolute left-1/2 -top-6 transform -translate-x-1/2 bg-blue-600 dark:bg-blue-500 text-white p-4 rounded-full shadow-xl border-4 border-gray-50 dark:border-slate-900 hover:scale-110 transition-transform"><Plus size={28} /></button>
+        <button aria-label="Adaugă tranzacție nouă" onClick={() => { resetTransForm(); setEditingId(null); setShowAddModal(true); }} className="absolute left-1/2 -top-6 transform -translate-x-1/2 bg-blue-600 dark:bg-blue-500 text-white p-4 rounded-full shadow-xl border-4 border-gray-50 dark:border-slate-900 hover:scale-110 transition-transform"><Plus size={28} /></button>
       </nav>
     </div>
   );
