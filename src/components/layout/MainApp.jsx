@@ -27,6 +27,7 @@ import AddDebtModal from '../modals/AddDebtModal';
 import AddNoteModal from '../modals/AddNoteModal';
 import ImportModal from '../modals/ImportModal';
 import HistoryModal from '../modals/HistoryModal';
+import ConfirmModal from '../modals/ConfirmModal';
 
 
 
@@ -55,6 +56,10 @@ export default function MainApp({ user, approved }) {
   const [undoItem, setUndoItem] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importConfig, setImportConfig] = useState({ target: '', source: '' });
+  
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, message: '', onConfirm: null });
+  const confirmAction = (message, onConfirm) => setConfirmDialog({ isOpen: true, message, onConfirm });
+  const closeConfirm = () => setConfirmDialog({ isOpen: false, message: '', onConfirm: null });
 
   const [editingId, setEditingId] = useState(null);
   const [newTrans, setNewTrans] = useState({ type: 'expense', amount: '', category: 'food', description: '', date: '' });
@@ -129,13 +134,18 @@ export default function MainApp({ user, approved }) {
 
   const handleDeleteTransaction = async (id, skipConfirm = false) => {
     if (!user) return;
-    if (!skipConfirm) {
-      if (!window.confirm("Ești sigur(ă) că vrei să ștergi această tranzacție?")) return;
+    const executeDelete = async () => {
+      const item = transactions.find(t => t.id === id);
+      setUndoItem(item);
+      await deleteDoc(doc(db, 'users', user.uid, 'transactions', id));
+      setTimeout(() => setUndoItem(null), 5000);
+    };
+
+    if (skipConfirm) {
+      await executeDelete();
+    } else {
+      confirmAction("Ești sigur(ă) că vrei să ștergi această tranzacție?", executeDelete);
     }
-    const item = transactions.find(t => t.id === id);
-    setUndoItem(item);
-    await deleteDoc(doc(db, 'users', user.uid, 'transactions', id));
-    setTimeout(() => setUndoItem(null), 5000);
   };
 
   const handleUndo = async () => {
@@ -230,8 +240,8 @@ export default function MainApp({ user, approved }) {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageWrapper><Dashboard currentMonthTotals={currentMonthTotals} transactions={transactions} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
             <Route path="/transactions" element={<PageWrapper><Transactions transactions={transactions} openAddModal={() => { resetTransForm(); setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
-            <Route path="/debts" element={<PageWrapper><Debts debts={debts} openDebtModal={() => { resetDebtForm(); setEditingDebtId(null); setShowDebtModal(true); }} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => { if (window.confirm("Ștergi datoria?")) deleteDoc(doc(db, 'users', user.uid, 'debts', id)); }} formatCurrency={formatCurrency} /></PageWrapper>} />
-            <Route path="/notes" element={<PageWrapper><Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => { if (id && window.confirm("Ștergi această listă?")) deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)); }} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} /></PageWrapper>} />
+            <Route path="/debts" element={<PageWrapper><Debts debts={debts} openDebtModal={() => { resetDebtForm(); setEditingDebtId(null); setShowDebtModal(true); }} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => confirmAction("Ești sigur(ă) că vrei să ștergi datoria?", () => deleteDoc(doc(db, 'users', user.uid, 'debts', id)))} formatCurrency={formatCurrency} /></PageWrapper>} />
+            <Route path="/notes" element={<PageWrapper><Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => confirmAction("Ești sigur(ă) că vrei să ștergi această listă de cumpărături?", () => deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)))} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} /></PageWrapper>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>
@@ -251,6 +261,14 @@ export default function MainApp({ user, approved }) {
         handleDeleteTransaction={handleDeleteTransaction}
         handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }}
         openAddModalForMonth={(monthKey) => { resetTransForm(); setNewTrans(prev => ({ ...prev, date: `${monthKey}-01` })); setEditingId(null); setShowAddModal(true); }}
+        confirmAction={confirmAction}
+      />
+
+      <ConfirmModal 
+        isOpen={confirmDialog.isOpen} 
+        message={confirmDialog.message} 
+        onConfirm={confirmDialog.onConfirm} 
+        onCancel={closeConfirm} 
       />
 
       {/* Undo Toast */}

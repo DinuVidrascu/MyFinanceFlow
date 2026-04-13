@@ -29,7 +29,7 @@ export default function HistoryModal({
 
   // Funcție pentru ștergerea întregii luni
   const handleDeleteFullMonth = (monthKey, monthLabel) => {
-    if (window.confirm(`Ești sigur că vrei să ștergi TOATE tranzacțiile din ${monthLabel}? Această acțiune este ireversibilă.`)) {
+    confirmAction(`Ești sigur că vrei să ștergi TOATE tranzacțiile din ${monthLabel}? Această acțiune este ireversibilă.`, () => {
       const monthTransactions = transactions.filter(t => {
         const d = new Date(t.date);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -38,7 +38,7 @@ export default function HistoryModal({
 
       monthTransactions.forEach(t => handleDeleteTransaction(t.id, true));
       setViewHistoryMonth(null);
-    }
+    });
   };
 
   return (
