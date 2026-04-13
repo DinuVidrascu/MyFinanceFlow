@@ -135,10 +135,14 @@ export default function MainApp({ user, approved }) {
   const handleDeleteTransaction = async (id, skipConfirm = false) => {
     if (!user) return;
     const executeDelete = async () => {
-      const item = transactions.find(t => t.id === id);
-      setUndoItem(item);
-      await deleteDoc(doc(db, 'users', user.uid, 'transactions', id));
-      setTimeout(() => setUndoItem(null), 5000);
+      try {
+        const item = transactions.find(t => t.id === id);
+        setUndoItem(item);
+        await deleteDoc(doc(db, 'users', user.uid, 'transactions', id));
+        setTimeout(() => setUndoItem(null), 5000);
+      } catch (err) {
+        alert("Eroare la ștergerea tranzacției: " + err.message);
+      }
     };
 
     if (skipConfirm) {
@@ -240,8 +244,8 @@ export default function MainApp({ user, approved }) {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageWrapper><Dashboard currentMonthTotals={currentMonthTotals} transactions={transactions} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
             <Route path="/transactions" element={<PageWrapper><Transactions transactions={transactions} openAddModal={() => { resetTransForm(); setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
-            <Route path="/debts" element={<PageWrapper><Debts debts={debts} openDebtModal={() => { resetDebtForm(); setEditingDebtId(null); setShowDebtModal(true); }} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => confirmAction("Ești sigur(ă) că vrei să ștergi datoria?", () => deleteDoc(doc(db, 'users', user.uid, 'debts', id)))} formatCurrency={formatCurrency} /></PageWrapper>} />
-            <Route path="/notes" element={<PageWrapper><Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => confirmAction("Ești sigur(ă) că vrei să ștergi această listă de cumpărături?", () => deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)))} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} /></PageWrapper>} />
+            <Route path="/debts" element={<PageWrapper><Debts debts={debts} openDebtModal={() => { resetDebtForm(); setEditingDebtId(null); setShowDebtModal(true); }} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => confirmAction("Ești sigur(ă) că vrei să ștergi datoria?", async () => { try { await deleteDoc(doc(db, 'users', user.uid, 'debts', id)); } catch(e) { alert(e.message); }})} formatCurrency={formatCurrency} /></PageWrapper>} />
+            <Route path="/notes" element={<PageWrapper><Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => confirmAction("Ești sigur(ă) că vrei să ștergi această listă de cumpărături?", async () => { try { await deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)); } catch(e) { alert(e.message); }})} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} /></PageWrapper>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>
