@@ -36,7 +36,7 @@ export default function HistoryModal({
         return key === monthKey;
       });
 
-      monthTransactions.forEach(t => handleDeleteTransaction(t.id));
+      monthTransactions.forEach(t => handleDeleteTransaction(t.id, true));
       setViewHistoryMonth(null);
     }
   };

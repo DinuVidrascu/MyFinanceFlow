@@ -127,8 +127,11 @@ export default function MainApp({ user, approved }) {
     resetTransForm();
   };
 
-  const handleDeleteTransaction = async (id) => {
+  const handleDeleteTransaction = async (id, skipConfirm = false) => {
     if (!user) return;
+    if (!skipConfirm) {
+      if (!window.confirm("Ești sigur(ă) că vrei să ștergi această tranzacție?")) return;
+    }
     const item = transactions.find(t => t.id === id);
     setUndoItem(item);
     await deleteDoc(doc(db, 'users', user.uid, 'transactions', id));
