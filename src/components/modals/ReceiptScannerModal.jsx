@@ -20,23 +20,34 @@ export default function ReceiptScannerModal({ isOpen, onClose, onDetected }) {
   };
 
     const parseReceiptText = (text) => {
+    // Normalizăm textul: eliminăm spațiile dintre cifre (pentru sume mari gen 1 204.05 -> 1204.05)
+    const normalized = text
+      .replace(/(\d)\s+(\d)/g, '$1$2') // 1 204 -> 1204
+      .replace(/(\d)\s+([.,])\s+(\d)/g, '$1$2$3'); // 1 . 05 -> 1.05
+
     // ─── Extrage suma totală ────────────────────────────────────────────────
-    // Caută pattern-uri ca: TOTAL LEI 1 204.05, TOTAL: 47.50, sau doar suma urmată de LEI
     const totalPatterns = [
-      /total\s+lei\s+([\d\s]+[.,]\d{2})/i,
-      /total[:\s]+([\d\s]+[.,]\d{2})/i,
-      /([\d\s]+[.,]\d{2})\s*(mdl|lei|l)/i,
+      /total\s*lei\D*(\d+[.,]\d{2})/i,
+      /total\D*(\d+[.,]\d{2})/i,
+      /numerar\D*(\d+[.,]\d{2})/i,
+      /(\d+[.,]\d{2})\s*(mdl|lei|l)/i,
     ];
     
     let amount = null;
+    let foundMatches = [];
+
     for (const pattern of totalPatterns) {
-      const m = text.match(pattern);
-      if (m) {
-        // Luăm cifra, scoatem spațiile (separatori mii) și înlocuim vigula cu punct
-        const rawAmount = m[1].replace(/\s/g, '').replace(',', '.');
-        amount = parseFloat(rawAmount);
-        break;
+      const ms = normalized.matchAll(new RegExp(pattern, 'gi'));
+      for (const m of ms) {
+        const raw = m[1].replace(',', '.');
+        const val = parseFloat(raw);
+        if (!isNaN(val)) foundMatches.push(val);
       }
+    }
+
+    // Luăm cea mai mare sumă găsită (de obicei Totalul e cea mai mare cifră din listă)
+    if (foundMatches.length > 0) {
+      amount = Math.max(...foundMatches);
     }
 
     // ─── Detectează categoria pe baza cuvintelor cheie ─────────────────────
