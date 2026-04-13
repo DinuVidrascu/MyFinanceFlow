@@ -12,7 +12,7 @@ import { useFinanceData } from '../../hooks/useFinanceData';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useDarkMode } from '../../hooks/useDarkMode';
-import { WifiOff, Wallet, Plus, RotateCcw, Home, List, CreditCard, ClipboardList, Calendar, Bell, Moon, Sun } from 'lucide-react';
+import { WifiOff, Wallet, Plus, RotateCcw, Home, List, CreditCard, ClipboardList, Calendar, Bell, Moon, Sun, Tag } from 'lucide-react';
 
 // Components
 import Dashboard from '../../pages/Dashboard';
@@ -28,6 +28,7 @@ import AddNoteModal from '../modals/AddNoteModal';
 import ImportModal from '../modals/ImportModal';
 import HistoryModal from '../modals/HistoryModal';
 import ConfirmModal from '../modals/ConfirmModal';
+import ManageCategoriesModal from '../modals/ManageCategoriesModal';
 
 
 
@@ -44,7 +45,7 @@ const PageWrapper = ({ children }) => (
 
 export default function MainApp({ user, approved }) {
   const location = useLocation();
-  const { transactions, debts, noteGroups } = useFinanceData(user, approved);
+  const { transactions, debts, noteGroups, customCategories } = useFinanceData(user, approved);
   const isOnline = useNetworkStatus();
   const { permission, requestPermission } = usePushNotifications();
   const [isDark, setIsDark] = useDarkMode();
@@ -60,6 +61,32 @@ export default function MainApp({ user, approved }) {
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, message: '', onConfirm: null });
   const confirmAction = (message, onConfirm) => setConfirmDialog({ isOpen: true, message, onConfirm });
   const closeConfirm = () => setConfirmDialog({ isOpen: false, message: '', onConfirm: null });
+
+  const [showCatsModal, setShowCatsModal] = useState(false);
+
+  // Merge categorii implicite + categorii custom din Firebase
+  const allCategories = useMemo(() => {
+    const customIcons = {};
+    customCategories.forEach(c => { customIcons[c.icon] = ICON_MAP[c.icon]; });
+    return [...CATEGORIES, ...customCategories];
+  }, [customCategories]);
+
+  const allIconMap = useMemo(() => {
+    const extra = {};
+    customCategories.forEach(c => { if (ICON_MAP[c.icon]) extra[c.icon] = ICON_MAP[c.icon]; });
+    return { ...ICON_MAP, ...extra };
+  }, [customCategories]);
+
+  const handleSaveCustomCategory = async (cat) => {
+    if (!user) return;
+    const { id, ...data } = cat;
+    await setDoc(doc(db, 'users', user.uid, 'customCategories', id), data);
+  };
+
+  const handleDeleteCustomCategory = async (id) => {
+    if (!user) return;
+    await deleteDoc(doc(db, 'users', user.uid, 'customCategories', id));
+  };
 
   const [editingId, setEditingId] = useState(null);
   const [newTrans, setNewTrans] = useState({ type: 'expense', amount: '', category: 'food', description: '', date: '' });
@@ -235,6 +262,7 @@ export default function MainApp({ user, approved }) {
               <Bell size={20} className="animate-pulse" />
             </button>
           )}
+          <button onClick={() => setShowCatsModal(true)} className="p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl border border-indigo-100 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition" title="Categorii Personalizate"><Tag size={20} /></button>
           <button onClick={() => setShowHistoryModal(true)} className="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-100 dark:border-blue-800/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition"><Calendar size={20} /></button>
         </div>
       </header>
@@ -242,8 +270,8 @@ export default function MainApp({ user, approved }) {
       <main className="max-w-md mx-auto p-4 w-full relative">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<PageWrapper><Dashboard currentMonthTotals={currentMonthTotals} transactions={transactions} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
-            <Route path="/transactions" element={<PageWrapper><Transactions transactions={transactions} openAddModal={() => { resetTransForm(); setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
+            <Route path="/" element={<PageWrapper><Dashboard currentMonthTotals={currentMonthTotals} transactions={transactions} formatCurrency={formatCurrency} ICON_MAP={allIconMap} CATEGORIES={allCategories} /></PageWrapper>} />
+            <Route path="/transactions" element={<PageWrapper><Transactions transactions={transactions} openAddModal={() => { resetTransForm(); setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={allIconMap} CATEGORIES={allCategories} /></PageWrapper>} />
             <Route path="/debts" element={<PageWrapper><Debts debts={debts} openDebtModal={() => { resetDebtForm(); setEditingDebtId(null); setShowDebtModal(true); }} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => confirmAction("Ești sigur(ă) că vrei să ștergi datoria?", async () => { try { await deleteDoc(doc(db, 'users', user.uid, 'debts', id)); } catch(e) { alert(e.message); }})} formatCurrency={formatCurrency} /></PageWrapper>} />
             <Route path="/notes" element={<PageWrapper><Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => confirmAction("Ești sigur(ă) că vrei să ștergi această listă de cumpărături?", async () => { try { await deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)); } catch(e) { alert(e.message); }})} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} /></PageWrapper>} />
             <Route path="*" element={<Navigate to="/" replace />} />
@@ -252,7 +280,7 @@ export default function MainApp({ user, approved }) {
       </main>
 
       {/* Modale */}
-      <AddTransactionModal showAddModal={showAddModal} setShowAddModal={setShowAddModal} newTrans={newTrans} setNewTrans={setNewTrans} editingId={editingId} handleSaveTransaction={handleSaveTransaction} />
+      <AddTransactionModal showAddModal={showAddModal} setShowAddModal={setShowAddModal} newTrans={newTrans} setNewTrans={setNewTrans} editingId={editingId} handleSaveTransaction={handleSaveTransaction} CATEGORIES={allCategories} ICON_MAP={allIconMap} />
       <AddDebtModal showDebtModal={showDebtModal} setShowDebtModal={setShowDebtModal} newDebt={newDebt} setNewDebt={setNewDebt} editingDebtId={editingDebtId} handleSaveDebt={handleSaveDebt} />
       <AddNoteModal showNoteModal={showNoteModal} setShowNoteModal={setShowNoteModal} currentGroup={currentGroup} setCurrentGroup={setCurrentGroup} handleAddSubItem={() => setCurrentGroup({...currentGroup, items: [...currentGroup.items, { id: crypto.randomUUID(), text: '', cost: '', checked: false }]})} handleRemoveSubItem={(id) => setCurrentGroup({...currentGroup, items: currentGroup.items.filter(i => i.id !== id)})} handleSubItemChange={(id, f, v) => setCurrentGroup({...currentGroup, items: currentGroup.items.map(i => i.id === id ? {...i, [f]: v} : i)})} handleSaveNoteGroup={handleSaveNoteGroup} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} formatCurrency={formatCurrency} />
       <ImportModal showImportModal={showImportModal} setShowImportModal={setShowImportModal} importConfig={importConfig} setImportConfig={setImportConfig} handleImportMonth={handleImportMonth} historyGroups={historyGroups} />
@@ -266,6 +294,14 @@ export default function MainApp({ user, approved }) {
         handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }}
         openAddModalForMonth={(monthKey) => { resetTransForm(); setNewTrans(prev => ({ ...prev, date: `${monthKey}-01` })); setEditingId(null); setShowAddModal(true); }}
         confirmAction={confirmAction}
+      />
+
+      <ManageCategoriesModal
+        isOpen={showCatsModal}
+        onClose={() => setShowCatsModal(false)}
+        customCategories={customCategories}
+        onSave={handleSaveCustomCategory}
+        onDelete={handleDeleteCustomCategory}
       />
 
       <ConfirmModal 

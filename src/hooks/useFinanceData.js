@@ -6,13 +6,14 @@ export function useFinanceData(user, approved) {
   const [transactions, setTransactions] = useState([]);
   const [debts, setDebts] = useState([]);
   const [noteGroups, setNoteGroups] = useState([]);
+  const [customCategories, setCustomCategories] = useState([]);
 
   useEffect(() => {
-    // Dacă nu avem utilizator sau nu e aprobat, nu încercăm să citim din DB
     if (!user || !approved) {
       setTransactions([]);
       setDebts([]);
       setNoteGroups([]);
+      setCustomCategories([]);
       return;
     }
 
@@ -34,13 +35,19 @@ export function useFinanceData(user, approved) {
       setNoteGroups(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
+    // 4. Listen Custom Categories
+    const catsUnsub = onSnapshot(userRef('customCategories'), (snap) => {
+      setCustomCategories(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
     // Cleanup la unmount
     return () => {
       transUnsub();
       debtsUnsub();
       notesUnsub();
+      catsUnsub();
     };
   }, [user, approved]);
 
-  return { transactions, debts, noteGroups };
+  return { transactions, debts, noteGroups, customCategories };
 }

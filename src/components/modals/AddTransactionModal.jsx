@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { CATEGORIES } from '../../constants/categories';
-import { ICON_MAP } from '../../constants/icons';
+import { CATEGORIES as DEFAULT_CATEGORIES } from '../../constants/categories';
+import { ICON_MAP as DEFAULT_ICON_MAP } from '../../constants/icons';
 
 export default function AddTransactionModal({
   showAddModal,
@@ -10,7 +10,8 @@ export default function AddTransactionModal({
   setNewTrans,
   editingId,
   handleSaveTransaction,
-  formatCurrency // nu e folosit direct, dar îl păstrăm pentru consistență
+  CATEGORIES = DEFAULT_CATEGORIES,
+  ICON_MAP = DEFAULT_ICON_MAP,
 }) {
   if (!showAddModal) return null;
 
@@ -80,13 +81,15 @@ export default function AddTransactionModal({
           <div>
             <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-2 block">Categorie</label>
             <div className="grid grid-cols-4 gap-2">
-              {CATEGORIES.filter(c => c.type === newTrans.type).slice(0, 8).map(cat => (
+              {CATEGORIES.filter(c => c.type === newTrans.type).map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => setNewTrans({...newTrans, category: cat.id})}
                   className={`flex flex-col items-center justify-center p-2 rounded-xl border transition ${newTrans.category === cat.id ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'border-gray-100 dark:border-slate-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
                 >
-                  <div className="mb-1">{ICON_MAP[cat.icon]}</div>
+                  <div className="mb-1" style={cat.color && newTrans.category !== cat.id ? { color: cat.color } : {}}>
+                    {ICON_MAP[cat.icon] || <span style={{ color: cat.color || '#6366f1', fontSize: 20 }}>●</span>}
+                  </div>
                   <span className="text-[10px] font-medium truncate w-full text-center">{cat.label}</span>
                 </button>
               ))}
