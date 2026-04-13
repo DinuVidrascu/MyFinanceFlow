@@ -20,9 +20,6 @@ export default function ReceiptScannerModal({ isOpen, onClose, onDetected }) {
   };
 
     const parseReceiptText = (text) => {
-    // Curăţăm textul de caractere ciudate OCR și spații multiple
-    const cleanText = text.replace(/\s+/g, ' ');
-
     // ─── Extrage suma totală ────────────────────────────────────────────────
     // Caută pattern-uri ca: TOTAL LEI 1 204.05, TOTAL: 47.50, sau doar suma urmată de LEI
     const totalPatterns = [
