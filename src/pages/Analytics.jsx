@@ -64,9 +64,10 @@ export default function Analytics({ transactions, formatCurrency, CATEGORIES, IC
 
   // Date pentru graficul lunar (ultimele 6 luni)
   const monthlyData = useMemo(() => {
+    const [cYear, cMonth] = currentKey.split('-').map(Number);
     const months = [];
     for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const d = new Date(cYear, cMonth - 1 - i, 1);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const label = d.toLocaleDateString('ro-RO', { month: 'short' });
       const monthTrans = transactions.filter(t => t.date?.startsWith(key));
@@ -77,7 +78,7 @@ export default function Analytics({ transactions, formatCurrency, CATEGORIES, IC
       });
     }
     return months;
-  }, [transactions]);
+  }, [transactions, currentKey]);
 
   const StatCard = ({ label, cur, prev, pct, color, icon: Icon }) => {
     const up = pct >= 0;
