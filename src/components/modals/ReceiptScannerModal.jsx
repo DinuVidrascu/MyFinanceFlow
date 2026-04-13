@@ -19,19 +19,25 @@ export default function ReceiptScannerModal({ isOpen, onClose, onDetected }) {
     onClose();
   };
 
-  const parseReceiptText = (text) => {
+    const parseReceiptText = (text) => {
+    // Curăţăm textul de caractere ciudate OCR și spații multiple
+    const cleanText = text.replace(/\s+/g, ' ');
+
     // ─── Extrage suma totală ────────────────────────────────────────────────
-    // Caută pattern-uri ca: TOTAL: 47.50, Total 47,50, 47.50 MDL, lei, L etc.
+    // Caută pattern-uri ca: TOTAL LEI 1 204.05, TOTAL: 47.50, sau doar suma urmată de LEI
     const totalPatterns = [
-      /total[:\s]+(\d+[.,]\d{2})/i,
-      /(\d+[.,]\d{2})\s*(mdl|lei|l)/i,
-      /(\d+[.,]\d{2})\s*$/m,
+      /total\s+lei\s+([\d\s]+[.,]\d{2})/i,
+      /total[:\s]+([\d\s]+[.,]\d{2})/i,
+      /([\d\s]+[.,]\d{2})\s*(mdl|lei|l)/i,
     ];
+    
     let amount = null;
     for (const pattern of totalPatterns) {
       const m = text.match(pattern);
       if (m) {
-        amount = parseFloat(m[1].replace(',', '.'));
+        // Luăm cifra, scoatem spațiile (separatori mii) și înlocuim vigula cu punct
+        const rawAmount = m[1].replace(/\s/g, '').replace(',', '.');
+        amount = parseFloat(rawAmount);
         break;
       }
     }
@@ -41,7 +47,7 @@ export default function ReceiptScannerModal({ isOpen, onClose, onDetected }) {
     let category = 'other';
     if (/kaufland|penny|lidl|mega|auchan|supermarket|market|billa|carrefour|profi/.test(lower)) category = 'food';
     else if (/restaurant|pizz|mc|kfc|burger|kebab|meniu|sushi|grill|bistro/.test(lower)) category = 'food';
-    else if (/farmaci|sanitas|medicover|medic|clinic|spital|reteta/.test(lower)) category = 'health';
+    else if (/farmaci|familie|dita|sanitas|medicover|medic|clinic|spital|reteta/.test(lower)) category = 'health';
     else if (/carburant|petrom|mol|rompetrol|benzin|motorina/.test(lower)) category = 'transport';
     else if (/h&m|zara|pull|new yorker|haine|imbracaminte/.test(lower)) category = 'clothing';
     else if (/starbucks|caffe|coffee|costa|espresso/.test(lower)) category = 'coffee';
