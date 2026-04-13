@@ -23,7 +23,8 @@ export default function HistoryModal({
   handleDeleteTransaction,
   handleEditClick,
   setShowImportModal,
-  formatCurrency
+  formatCurrency,
+  confirmAction
 }) {
   if (!showHistoryModal) return null;
 
