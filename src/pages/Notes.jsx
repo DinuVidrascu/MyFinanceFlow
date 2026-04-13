@@ -76,10 +76,8 @@ export default function Notes({
                         console.error("Obiectul grupului fără ID:", group);
                         return;
                       }
-                      // Confirmare înainte de ștergere
-                      if (window.confirm(`Sigur vrei să ștergi categoria "${group.title}"?`)) {
-                        handleDeleteGroup(groupId);
-                      }
+                      // Confirmarea are loc în MainApp prin ConfirmModal
+                      handleDeleteGroup(groupId);
                     }} 
                     className="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition"
                   >
