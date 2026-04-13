@@ -41,24 +41,21 @@ export default function Dashboard({
             </div>
           </div>
         </div>
-        {/* Sectiune Economii in Card */}
-        <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-purple-400/20 rounded-lg text-purple-300">
-              <PiggyBank size={16} />
-            </div>
-            <span className="text-xs text-blue-100">Pus "la ciorap" (Economii)</span>
-          </div>
-          <span className="font-bold text-sm text-purple-200">{formatCurrency(currentMonthTotals.savings)}</span>
-        </div>
       </div>
 
       {/* Savings Projections */}
       <div className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 transition-colors duration-300">
-        <div className="flex items-center gap-2 mb-4">
-          <PiggyBank className="text-purple-500 dark:text-purple-400" size={20} />
-          <h3 className="font-bold text-gray-800 dark:text-white">Proiecții Economisire</h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
+              <PiggyBank size={20} />
+            </div>
+            <h3 className="font-bold text-gray-800 dark:text-white">Total Economii</h3>
+          </div>
+          <span className="text-xl font-black text-purple-600 dark:text-purple-400">{formatCurrency(currentMonthTotals.savings)}</span>
         </div>
+        
+        <h4 className="text-xs font-bold text-gray-400 uppercase mb-3 px-1">Proiecții Setate</h4>
        
         {currentMonthTotals.savings > 0 ? (
           <div className="grid grid-cols-2 gap-4">

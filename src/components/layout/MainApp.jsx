@@ -63,6 +63,8 @@ export default function MainApp({ user, approved }) {
 
   const [editingDebtId, setEditingDebtId] = useState(null);
   const [newDebt, setNewDebt] = useState({ name: '', total: '', remaining: '', monthlyPayment: '' });
+  const resetDebtForm = () => setNewDebt({ name: '', total: '', remaining: '', monthlyPayment: '' });
+  
   const [showDebtModal, setShowDebtModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [currentGroup, setCurrentGroup] = useState({ id: null, title: '', items: [] });
@@ -143,7 +145,8 @@ export default function MainApp({ user, approved }) {
 
   const handleSaveDebt = async () => {
     if (!user || !newDebt.name) return;
-    const data = { ...newDebt, total: Number(newDebt.total), remaining: Number(newDebt.remaining || newDebt.total), monthlyPayment: Number(newDebt.monthlyPayment || 0) };
+    const { id, ...cleanDebt } = newDebt;
+    const data = { ...cleanDebt, total: Number(newDebt.total), remaining: Number(newDebt.remaining || newDebt.total), monthlyPayment: Number(newDebt.monthlyPayment || 0) };
     if (editingDebtId) {
       await setDoc(doc(db, 'users', user.uid, 'debts', editingDebtId), data);
     } else {
@@ -151,6 +154,7 @@ export default function MainApp({ user, approved }) {
     }
     setShowDebtModal(false);
     setEditingDebtId(null);
+    resetDebtForm();
   };
 
   const handleSaveNoteGroup = async () => {
@@ -223,7 +227,7 @@ export default function MainApp({ user, approved }) {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageWrapper><Dashboard currentMonthTotals={currentMonthTotals} transactions={transactions} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
             <Route path="/transactions" element={<PageWrapper><Transactions transactions={transactions} openAddModal={() => { resetTransForm(); setEditingId(null); setShowAddModal(true); }} handleEditClick={(t) => { setNewTrans({...t, date: new Date(t.date).toISOString().split('T')[0]}); setEditingId(t.id); setShowAddModal(true); }} handleDeleteTransaction={handleDeleteTransaction} formatCurrency={formatCurrency} ICON_MAP={ICON_MAP} CATEGORIES={CATEGORIES} /></PageWrapper>} />
-            <Route path="/debts" element={<PageWrapper><Debts debts={debts} openDebtModal={() => setShowDebtModal(true)} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => { if (window.confirm("Ștergi datoria?")) deleteDoc(doc(db, 'users', user.uid, 'debts', id)); }} formatCurrency={formatCurrency} /></PageWrapper>} />
+            <Route path="/debts" element={<PageWrapper><Debts debts={debts} openDebtModal={() => { resetDebtForm(); setEditingDebtId(null); setShowDebtModal(true); }} handleEditDebt={(d) => { setEditingDebtId(d.id); setNewDebt(d); setShowDebtModal(true); }} handleDeleteDebt={(id) => { if (window.confirm("Ștergi datoria?")) deleteDoc(doc(db, 'users', user.uid, 'debts', id)); }} formatCurrency={formatCurrency} /></PageWrapper>} />
             <Route path="/notes" element={<PageWrapper><Notes noteGroups={noteGroups} openNoteGroupModal={(g = null) => { setCurrentGroup(g ? {...g} : {id:null, title:'', items:[{id:crypto.randomUUID(), text:'', cost:'', checked:false}]}); setShowNoteModal(true); }} handleDeleteGroup={(id) => { if (id && window.confirm("Ștergi această listă?")) deleteDoc(doc(db, 'users', user.uid, 'noteGroups', id)); }} toggleSubItemCheck={toggleSubItemCheck} getGroupTotal={(items) => items.reduce((a, b) => a + Number(b.cost || 0), 0)} notesTotalImpact={notesTotalImpact} formatCurrency={formatCurrency} /></PageWrapper>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
