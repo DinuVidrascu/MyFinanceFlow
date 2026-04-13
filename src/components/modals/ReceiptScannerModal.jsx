@@ -20,35 +20,68 @@ export default function ReceiptScannerModal({ isOpen, onClose, onDetected }) {
   };
 
     const parseReceiptText = (text) => {
-    // Normalizăm textul: eliminăm spațiile dintre cifre (pentru sume mari gen 1 204.05 -> 1204.05)
+    // 1. Curățăm textul de erori comune OCR (0 în loc de O, I în loc de 1 etc)
     const normalized = text
       .replace(/(\d)\s+(\d)/g, '$1$2') // 1 204 -> 1204
-      .replace(/(\d)\s+([.,])\s+(\d)/g, '$1$2$3'); // 1 . 05 -> 1.05
+      .replace(/(\d)\s+([.,])\s+(\d)/g, '$1$2$3') // 1 . 05 -> 1.05
+      .replace(/[iIl]/g, '1') // OCR confundă des I cu 1
+      .replace(/[oOqQ]/g, '0'); // OCR confundă des O cu 0
 
-    // ─── Extrage suma totală ────────────────────────────────────────────────
-    const totalPatterns = [
-      /total\s*lei\D*(\d+[.,]\d{2})/i,
-      /total\D*(\d+[.,]\d{2})/i,
-      /numerar\D*(\d+[.,]\d{2})/i,
-      /(\d+[.,]\d{2})\s*(mdl|lei|l)/i,
-    ];
-    
+    // 2. Căutăm toate sumele posibile (format XX.XX)
+    const amountRegex = /(\d+[.,]\d{2})/g;
+    const allAmounts = [];
+    let match;
+    while ((match = amountRegex.exec(normalized)) !== null) {
+      const val = parseFloat(match[1].replace(',', '.'));
+      if (!isNaN(val) && val > 0) allAmounts.push(val);
+    }
+
+    // 3. Căutăm cuvinte cheie tip "TOTAL" (cu variații de erori)
+    const totalKeywords = [/t0tal/i, /tqtal/i, /total/i, /lei/i, /mdl/i, /numerar/i, /suma/i, /plata/i];
+    const isTotalLine = (line) => totalKeywords.some(kw => kw.test(line));
+
+    const lines = normalized.split('\n');
     let amount = null;
-    let foundMatches = [];
 
-    for (const pattern of totalPatterns) {
-      const ms = normalized.matchAll(new RegExp(pattern, 'gi'));
-      for (const m of ms) {
-        const raw = m[1].replace(',', '.');
-        const val = parseFloat(raw);
-        if (!isNaN(val)) foundMatches.push(val);
+    // Încercăm să găsim o sumă pe o linie care conține un cuvânt cheie
+    for (const line of lines) {
+      if (isTotalLine(line)) {
+        const m = line.match(/(\d+[.,]\d{2})/);
+        if (m) {
+          amount = parseFloat(m[1].replace(',', '.'));
+          break;
+        }
       }
     }
 
-    // Luăm cea mai mare sumă găsită (de obicei Totalul e cea mai mare cifră din listă)
-    if (foundMatches.length > 0) {
-      amount = Math.max(...foundMatches);
+    // Fallback: Dacă nu am găsit prin cuvinte cheie, luăm cea mai mare sumă de pe bon
+    if (!amount && allAmounts.length > 0) {
+      amount = Math.max(...allAmounts);
     }
+
+    // 4. Categorie (rămâne neschimbată)
+    const lower = text.toLowerCase();
+    let category = 'other';
+    if (/kaufland|penny|lidl|mega|auchan|supermarket|market|billa|carrefour|profi/.test(lower)) category = 'food';
+    else if (/restaurant|pizz|mc|kfc|burger|kebab|meniu|sushi|grill|bistro/.test(lower)) category = 'food';
+    else if (/farmaci|familie|dita|sanitas|medicover|medic|clinic|spital|reteta/.test(lower)) category = 'health';
+    else if (/carburant|petrom|mol|rompetrol|benzin|motorina/.test(lower)) category = 'transport';
+    else if (/h&m|zara|pull|new yorker|haine|imbracaminte/.test(lower)) category = 'clothing';
+    else if (/starbucks|caffe|coffee|costa|espresso/.test(lower)) category = 'coffee';
+    else if (/emag|altex|mediagalaxy|dedeman|bricostore/.test(lower)) category = 'shopping';
+    else if (/orange|vodafone|digi|telekom/.test(lower)) category = 'phone';
+
+    // 5. Data
+    const dateM = normalized.match(/(\d{2})[./-](\d{2})[./-](\d{4})/) || normalized.match(/(\d{4})[./-](\d{2})[./-](\d{2})/);
+    let date = new Date().toISOString().split('T')[0];
+    if (dateM) {
+        const parts = dateM[0].split(/[./-]/);
+        if (parts[0].length === 4) date = `${parts[0]}-${parts[1]}-${parts[2]}`;
+        else date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+
+    return { amount, category, date, rawText: text };
+  };
 
     // ─── Detectează categoria pe baza cuvintelor cheie ─────────────────────
     const lower = text.toLowerCase();
@@ -206,9 +239,19 @@ export default function ReceiptScannerModal({ isOpen, onClose, onDetected }) {
             )}
 
             {status === 'error' && (
-              <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-100 dark:border-red-800/40 flex items-start gap-2">
-                <AlertCircle size={18} className="text-red-500 mt-0.5 shrink-0" />
-                <p className="text-sm text-red-600 dark:text-red-400">{errorMsg}</p>
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-100 dark:border-red-800/40 flex flex-col gap-2">
+                <div className="flex items-start gap-2">
+                  <AlertCircle size={18} className="text-red-500 mt-0.5 shrink-0" />
+                  <p className="text-sm text-red-600 dark:text-red-400">{errorMsg}</p>
+                </div>
+                {result?.rawText && (
+                  <details className="mt-2">
+                    <summary className="text-[10px] text-red-400 cursor-pointer hover:underline uppercase font-bold">Vezi text detectat (Debug)</summary>
+                    <pre className="mt-2 text-[10px] bg-white/50 dark:bg-black/20 p-2 rounded border border-red-100 dark:border-red-800/20 max-h-32 overflow-y-auto whitespace-pre-wrap text-gray-600 dark:text-gray-400">
+                      {result.rawText}
+                    </pre>
+                  </details>
+                )}
               </div>
             )}
 
