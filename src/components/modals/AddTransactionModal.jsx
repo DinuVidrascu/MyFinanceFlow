@@ -1,7 +1,8 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, ScanLine } from 'lucide-react';
 import { CATEGORIES as DEFAULT_CATEGORIES } from '../../constants/categories';
 import { ICON_MAP as DEFAULT_ICON_MAP } from '../../constants/icons';
+import ReceiptScannerModal from './ReceiptScannerModal';
 
 export default function AddTransactionModal({
   showAddModal,
@@ -13,101 +14,141 @@ export default function AddTransactionModal({
   CATEGORIES = DEFAULT_CATEGORIES,
   ICON_MAP = DEFAULT_ICON_MAP,
 }) {
+  const [showScanner, setShowScanner] = useState(false);
+
   if (!showAddModal) return null;
 
+  const handleScanDetected = (detected) => {
+    setNewTrans(prev => ({ ...prev, ...detected }));
+  };
+
   return (
-    <div
-      className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-colors duration-300"
-      onClick={(e) => { if (e.target === e.currentTarget) setShowAddModal(false); }}
-    >
-      <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl animate-slide-up border border-transparent dark:border-slate-800">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white">{editingId ? 'Editează Tranzacția' : 'Tranzacție Nouă'}</h3>
-          <button onClick={() => setShowAddModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition">
-            <X size={24} />
-          </button>
-        </div>
-        <div className="flex gap-2 mb-6 bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
-          <button
-            onClick={() => setNewTrans({...newTrans, type: 'expense'})}
-            className={`flex-1 py-2 text-xs sm:text-sm font-medium rounded-md transition ${newTrans.type === 'expense' ? 'bg-white dark:bg-slate-700 text-red-600 dark:text-red-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-300'}`}
-          >
-            Cheltuială
-          </button>
-          <button
-            onClick={() => setNewTrans({...newTrans, type: 'income'})}
-            className={`flex-1 py-2 text-xs sm:text-sm font-medium rounded-md transition ${newTrans.type === 'income' ? 'bg-white dark:bg-slate-700 text-green-600 dark:text-green-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-300'}`}
-          >
-            Venit
-          </button>
-          <button
-            onClick={() => setNewTrans({...newTrans, type: 'savings'})}
-            className={`flex-1 py-2 text-xs sm:text-sm font-medium rounded-md transition ${newTrans.type === 'savings' ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-300'}`}
-          >
-            Economii
-          </button>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">Sumă (Lei)</label>
-            <input
-              type="number"
-              value={newTrans.amount}
-              onChange={(e) => setNewTrans({...newTrans, amount: e.target.value})}
-              className="w-full text-3xl font-bold text-gray-800 dark:text-white border-b-2 border-gray-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 outline-none py-2 bg-transparent"
-              placeholder="0"
-              autoFocus
-            />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">Data Tranzacției</label>
-            <input
-              type="date"
-              value={newTrans.date}
-              onChange={(e) => setNewTrans({...newTrans, date: e.target.value})}
-              className="w-full p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 text-gray-800 dark:text-white"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">Descriere</label>
-            <input
-              type="text"
-              value={newTrans.description}
-              onChange={(e) => setNewTrans({...newTrans, description: e.target.value})}
-              className="w-full p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-600"
-              placeholder="Ex: Pusi la ciorap"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-2 block">Categorie</label>
-            <div className="grid grid-cols-4 gap-2">
-              {CATEGORIES.filter(c => c.type === newTrans.type).map(cat => (
+    <>
+      <div
+        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-colors duration-300"
+        onClick={(e) => { if (e.target === e.currentTarget) setShowAddModal(false); }}
+      >
+        <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl animate-slide-up border border-transparent dark:border-slate-800">
+
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-white">
+              {editingId ? 'Editează Tranzacția' : 'Tranzacție Nouă'}
+            </h3>
+            <div className="flex items-center gap-2">
+              {!editingId && (
                 <button
-                  key={cat.id}
-                  onClick={() => setNewTrans({...newTrans, category: cat.id})}
-                  className={`flex flex-col items-center justify-center p-2 rounded-xl border transition ${newTrans.category === cat.id ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'border-gray-100 dark:border-slate-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+                  onClick={() => setShowScanner(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl text-xs font-semibold border border-purple-100 dark:border-purple-800/50 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition"
+                  title="Scanează bon"
                 >
-                  <div className="mb-1" style={cat.color && newTrans.category !== cat.id ? { color: cat.color } : {}}>
-                    {ICON_MAP[cat.icon] || <span style={{ color: cat.color || '#6366f1', fontSize: 20 }}>●</span>}
-                  </div>
-                  <span className="text-[10px] font-medium truncate w-full text-center">{cat.label}</span>
+                  <ScanLine size={14} />
+                  Scanează bon
                 </button>
-              ))}
-              {CATEGORIES.filter(c => c.type === newTrans.type).length === 0 && (
-                <div className="col-span-4 text-center text-xs text-gray-400 dark:text-gray-500 py-2">
-                  Selectează un tip pentru a vedea categoriile.
-                </div>
               )}
+              <button onClick={() => setShowAddModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition">
+                <X size={24} />
+              </button>
             </div>
           </div>
+
+          {/* Tip tranzacție */}
+          <div className="flex gap-2 mb-6 bg-gray-100 dark:bg-slate-800 p-1 rounded-lg">
+            {['expense', 'income', 'savings'].map(type => (
+              <button
+                key={type}
+                onClick={() => setNewTrans({ ...newTrans, type })}
+                className={`flex-1 py-2 text-xs sm:text-sm font-medium rounded-md transition ${
+                  newTrans.type === type
+                    ? `bg-white dark:bg-slate-700 shadow-sm ${type === 'expense' ? 'text-red-600 dark:text-red-400' : type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-purple-600 dark:text-purple-400'}`
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                {type === 'expense' ? 'Cheltuială' : type === 'income' ? 'Venit' : 'Economii'}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-4">
+            {/* Sumă */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">Sumă (Lei)</label>
+              <input
+                type="number"
+                value={newTrans.amount}
+                onChange={(e) => setNewTrans({ ...newTrans, amount: e.target.value })}
+                className="w-full text-3xl font-bold text-gray-800 dark:text-white border-b-2 border-gray-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 outline-none py-2 bg-transparent"
+                placeholder="0"
+                autoFocus
+              />
+            </div>
+
+            {/* Data */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">Data Tranzacției</label>
+              <input
+                type="date"
+                value={newTrans.date}
+                onChange={(e) => setNewTrans({ ...newTrans, date: e.target.value })}
+                className="w-full p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 text-gray-800 dark:text-white"
+              />
+            </div>
+
+            {/* Descriere */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">Descriere</label>
+              <input
+                type="text"
+                value={newTrans.description}
+                onChange={(e) => setNewTrans({ ...newTrans, description: e.target.value })}
+                className="w-full p-3 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-600"
+                placeholder="Ex: Pusi la ciorap"
+              />
+            </div>
+
+            {/* Categorii */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase ml-1 mb-2 block">Categorie</label>
+              <div className="grid grid-cols-4 gap-2">
+                {CATEGORIES.filter(c => c.type === newTrans.type).map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setNewTrans({ ...newTrans, category: cat.id })}
+                    className={`flex flex-col items-center justify-center p-2 rounded-xl border transition ${
+                      newTrans.category === cat.id
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                        : 'border-gray-100 dark:border-slate-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="mb-1" style={cat.color && newTrans.category !== cat.id ? { color: cat.color } : {}}>
+                      {ICON_MAP[cat.icon] || <span style={{ color: cat.color || '#6366f1', fontSize: 20 }}>●</span>}
+                    </div>
+                    <span className="text-[10px] font-medium truncate w-full text-center">{cat.label}</span>
+                  </button>
+                ))}
+                {CATEGORIES.filter(c => c.type === newTrans.type).length === 0 && (
+                  <div className="col-span-4 text-center text-xs text-gray-400 dark:text-gray-500 py-2">
+                    Selectează un tip pentru a vedea categoriile.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={handleSaveTransaction}
+            className="w-full mt-8 bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-blue-700 active:scale-[0.98] transition-all"
+          >
+            {editingId ? 'Actualizează' : 'Salvează Tranzacția'}
+          </button>
         </div>
-        <button
-          onClick={handleSaveTransaction}
-          className="w-full mt-8 bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-blue-700 active:scale-[0.98] transition-all"
-        >
-          {editingId ? 'Actualizează' : 'Salvează Tranzacția'}
-        </button>
       </div>
-    </div>
+
+      <ReceiptScannerModal
+        isOpen={showScanner}
+        onClose={() => setShowScanner(false)}
+        onDetected={handleScanDetected}
+      />
+    </>
   );
 }
